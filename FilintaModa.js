@@ -1,11 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const targetDiv = document.querySelector('.product-detail-page-easy-refund');
-  if (targetDiv) {
+  // waitForElement fonksiyonu: Belirli aralıklarla seçiciyi kontrol eder.
+  function waitForElement(selector, callback, timeout = 5000, interval = 100) {
+    const startTime = Date.now();
+    const timer = setInterval(function() {
+      const element = document.querySelector(selector);
+      if (element) {
+        clearInterval(timer);
+        console.log(`Element '${selector}' bulundu (${Date.now() - startTime}ms sonra).`);
+        callback(element);
+      } else if (Date.now() - startTime > timeout) {
+        clearInterval(timer);
+        console.warn(`Element '${selector}' ${timeout}ms içinde bulunamadı.`);
+      }
+    }, interval);
+  }
+
+  // .product-detail-page-easy-refund elementinin bulunmasını bekle ve güncelle.
+  waitForElement('.product-detail-page-easy-refund', function(targetDiv) {
+    console.log("Güncelleme işlemi başlatılıyor...");
     targetDiv.innerHTML = `
-
-
-
-    
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         .alis-dijital-container {
@@ -185,11 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
         </div>
       </div>
-
-
-
-
-
     `;
-  }
+    console.log("İçerik başarıyla güncellendi.");
+  });
 });
