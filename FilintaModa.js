@@ -222,6 +222,7 @@
   const initialize = () => {
     // İlk enjeksiyon denemesi
     waitForElement(TARGET_SELECTOR, injectBedenTablo);
+    console.log("element bekleniyor")
     
     // SPA navigasyon takibi
     window.addEventListener('urlchange', () => {
@@ -230,6 +231,8 @@
     
     // Observer'ı başlat
     setupObserver();
+    console.log("observe başlatıldı")
+
     hijackHistoryAPI();
   };
 
@@ -237,9 +240,7 @@
   if (document.readyState === 'complete') {
     initialize();
   } else {
-    document.append(`
-      <button> running  app </button>
-      `)
+  
     document.addEventListener('DOMContentLoaded', initialize);
     window.addEventListener('load', initialize);
   }
