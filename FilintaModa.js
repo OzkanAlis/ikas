@@ -1,23 +1,23 @@
-document.addEventListener('DOMContentLoaded', function() {
-  // waitForElement fonksiyonu: Belirli aralıklarla seçiciyi kontrol eder.
-  function waitForElement(selector, callback, timeout = 5000, interval = 100) {
-    const startTime = Date.now();
-    const timer = setInterval(function() {
+(() => {
+  // waitForElement: Belirtilen seçiciyi her 'interval' ms kontrol eder, 'maxAttempts' den sonra zaman aşımına uğrarsa durur.
+  function waitForElement(selector, callback, interval = 100, maxAttempts = 50) {
+    let attempts = 0;
+    const intervalId = setInterval(() => {
       const element = document.querySelector(selector);
       if (element) {
-        clearInterval(timer);
-        console.log(`Element '${selector}' bulundu (${Date.now() - startTime}ms sonra).`);
+        clearInterval(intervalId);
+        console.log(`Element '${selector}' bulundu (${attempts * interval}ms sonra).`);
         callback(element);
-      } else if (Date.now() - startTime > timeout) {
-        clearInterval(timer);
-        console.warn(`Element '${selector}' ${timeout}ms içinde bulunamadı.`);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(intervalId);
+        console.warn(`Element '${selector}' ${interval * maxAttempts}ms içinde bulunamadı.`);
       }
+      attempts++;
     }, interval);
   }
 
-  // .product-detail-page-easy-refund elementinin bulunmasını bekle ve güncelle.
-  waitForElement('.product-detail-page-easy-refund', function(targetDiv) {
-    console.log("Güncelleme işlemi başlatılıyor...");
+  // addBedenTablosu: Hedef elementin içeriğini tamamen temizleyip, beden tablosu kodunu ekler.
+  function addBedenTablosu(targetDiv) {
     targetDiv.innerHTML = `
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
@@ -40,14 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
           color: #000;
           text-align: center;
         }
-        /* Kartların kapsayıcısı: tüm cihazlarda alt alta yığılacak */
         .alis-dijital-cards {
           display: flex;
           flex-direction: column;
           gap: 20px;
           margin-left: 0;
         }
-        /* Her kart tam genişlikte */
         .alis-dijital-card {
           width: 100%;
           background-color: #fff;
@@ -59,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
           flex-direction: column;
           text-align: center;
         }
-        /* Kart başlığı */
         .alis-dijital-card-header {
           background-color: #000;
           color: #fff;
@@ -69,11 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
-        /* Kart içeriği */
         .alis-dijital-card-content {
           padding: 20px;
         }
-        /* Grid tabanlı tablo */
         .alis-dijital-data-list {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -93,15 +88,12 @@ document.addEventListener('DOMContentLoaded', function() {
           border-right: 1px solid #ccc;
           color: #000;
         }
-        /* Son sütunda sağ kenarlık kaldır */
         .alis-dijital-data-row .alis-dijital-data-cell:nth-child(2n) {
           border-right: none;
         }
-        /* Son satırda alt kenarlığı kaldır */
         .alis-dijital-data-list .alis-dijital-data-row:last-child .alis-dijital-data-cell {
           border-bottom: none;
         }
-        /* Başlık satırı */
         .alis-dijital-header-row {
           background-color: #000;
           color: #fff;
@@ -199,6 +191,58 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
     `;
-    console.log("İçerik başarıyla güncellendi.");
-  });
-});
+    console.log("Beden tablosu içeriği başarıyla güncellendi.");
+  }
+
+  // URL değişikliklerini algılamak için basit bir fonksiyon (SPA'larda yeniden ekleme için)
+  let previousUrl = window.location.href;
+  function onUrlChange() {
+    setTimeout(() => {
+      if (window.location.href !== previousUrl) {
+        previousUrl = window.location.href;
+        const container = document.querySelector(".product-detail-page-easy-refund");
+        if (container) {
+          addBedenTablosu(container);
+        }
+      }
+    }, 300);
+  }
+
+  // MutationObserver ile DOM değişikliklerini izleyerek URL değişikliklerini kontrol et
+  function initializeObserver() {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.addedNodes.length || mutation.removedNodes.length) {
+          onUrlChange();
+        }
+      });
+    });
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  // initializeRender: Sayfa yüklendiğinde hedef elementi bekle ve beden tablosunu ekle, ayrıca gözlemciyi başlat.
+  function initializeRender() {
+    waitForElement(".product-detail-page-easy-refund", addBedenTablosu, 100, 50);
+    onUrlChange();
+    initializeObserver();
+  }
+
+  window.addEventListener("load", initializeRender);
+  window.addEventListener("popstate", onUrlChange);
+  window.addEventListener("DOMContentLoaded", initializeRender);
+
+  // history.pushState ve history.replaceState override'leri, URL değişimlerinde onUrlChange fonksiyonunu çağırır.
+  const pushState = history.pushState;
+  history.pushState = function () {
+    pushState.apply(history, arguments);
+    onUrlChange();
+  };
+
+  const replaceState = history.replaceState;
+  history.replaceState = function () {
+    replaceState.apply(history, arguments);
+    onUrlChange();
+  };
+})();
