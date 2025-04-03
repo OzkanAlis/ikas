@@ -1,3 +1,4 @@
+console.log("documnet loaded")
 (() => {
   // Namespace ve sabitler
   console.log("app running")
