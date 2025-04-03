@@ -1,5 +1,6 @@
 (() => {
   // Namespace ve sabitler
+  console.log("app running")
   const NAMESPACE = 'adbt_';
   const TARGET_SELECTOR = '.product-detail-page-easy-refund';
   const MAX_ATTEMPTS = 15;
