@@ -1,25 +1,11 @@
-(() => {
-  // Utility function to wait for an element to appear in the DOM
-  const waitForElement = (selector, callback, interval = 100, maxAttempts = 10) => {
-    let attempts = 0;
-    const intervalId = setInterval(() => {
-      const element = document.querySelector(selector);
-      if (element) {
-        clearInterval(intervalId);
-        callback(element);
-      }
-      if (attempts >= maxAttempts) {
-        clearInterval(intervalId);
-      }
-      attempts++;
-    }, interval);
-  };
+document.addEventListener('DOMContentLoaded', function() {
+  const targetDiv = document.querySelector('.product-detail-page-easy-refund');
+  if (targetDiv) {
+    targetDiv.innerHTML = `
 
-  let previousUrl = window.location.href;
 
-  // Alış Dijital içerik bileşeni: WhatsApp butonunun yerine gösterilecek HTML içeriği
-  const createAlisDijitalContent = () => {
-    return `
+
+    
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         .alis-dijital-container {
@@ -199,67 +185,11 @@
           </div>
         </div>
       </div>
+
+
+
+
+
     `;
-  };
-
-  // Sayfaya Alış Dijital içerik ekle (varsa yinelenmeyi önlemek için kontrol edilir)
-  const addAlisDijitalContent = () => {
-    const container = document.querySelector(".product-detail-page-easy-refund");
-    if (!container || document.querySelector(".alis-dijital-container")) {
-      return;
-    }
-    // Yeni içeriği ilgili container'ın üstüne ekleyelim
-    container.insertAdjacentHTML("beforebegin", createAlisDijitalContent());
-  };
-
-  // URL değişikliklerinde içeriği güncelle
-  const onUrlChange = () => {
-    setTimeout(() => {
-      if (window.location.href !== previousUrl) {
-        previousUrl = window.location.href;
-        document.querySelectorAll(".alis-dijital-container").forEach((el) => el.remove());
-        waitForElement(".product-detail-page-easy-refund", addAlisDijitalContent, 100, 10);
-      }
-    }, 300);
-  };
-
-  // MutationObserver ile DOM değişikliklerini takip et
-  const initializeObserver = () => {
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.addedNodes.length || mutation.removedNodes.length) {
-          onUrlChange();
-          break;
-        }
-      }
-    });
-    if (document.body) {
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
-  };
-
-  // Başlangıç fonksiyonu: elementi bekleyip içeriği ekle, URL değişikliklerini dinle
-  const initializeRender = () => {
-    waitForElement(".product-detail-page-easy-refund", addAlisDijitalContent, 100, 10);
-    onUrlChange();
-    initializeObserver();
-  };
-
-  // Event listener'ları ekle
-  window.addEventListener("load", initializeRender);
-  window.addEventListener("popstate", onUrlChange);
-  window.addEventListener("DOMContentLoaded", initializeRender);
-
-  // History metodlarını geçersiz kılarak URL değişikliklerini yakala
-  const originalPushState = history.pushState;
-  history.pushState = function () {
-    originalPushState.apply(history, arguments);
-    onUrlChange();
-  };
-
-  const originalReplaceState = history.replaceState;
-  history.replaceState = function () {
-    originalReplaceState.apply(history, arguments);
-    onUrlChange();
-  };
-})();
+  }
+});
