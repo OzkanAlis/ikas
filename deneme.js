@@ -1,18 +1,6 @@
-<script>
 (() => {
-  /*******************************************************
-   * 1) URL DEĞİŞİKLİĞİ VE DOM GÖZLEMLEME FONKSİYONLARI
-   *******************************************************/
-  const onUrlChange = () => {
-    setTimeout(() => {
-      waitForElement(".product-detail-page-easy-refund", addCustomHtml, 100, 10);
-    }, 300);
-    setTimeout(() => {
-      waitForElement("footer", addFooterHtml, 100, 10);
-    }, 300);
-  };
-
-  const waitForElement = (selector, callback, interval, maxAttempts) => {
+  // Utility function to wait for an element to appear in the DOM
+  const waitForElement = (selector, callback, interval = 100, maxAttempts = 10) => {
     let attempts = 0;
     const intervalId = setInterval(() => {
       const element = document.querySelector(selector);
@@ -27,186 +15,251 @@
     }, interval);
   };
 
-  /*******************************************************
-   * 2) ANA FONKSİYON: “safeSecure” + “Birlikte İyi Gider”
-   *******************************************************/
-  const addCustomHtml = () => {
-    const container = document.querySelector(".product-detail-page-easy-refund");
-    // Eğer container yoksa veya safeSecure zaten eklenmişse, tekrar ekleme
-    if (!container || document.querySelector(".safeSecure")) return;
+  let previousUrl = window.location.href;
 
-    // --- 2.1) safeSecure ALANI (Taksit & Banka Logoları) ---
-    const safeSecureHTML = `
+  // Alış Dijital içerik bileşeni: WhatsApp butonunun yerine gösterilecek HTML içeriği
+  const createAlisDijitalContent = () => {
+    return `
       <style>
-        .safeSecure {
-          width: 100%;
-          height: auto;
-          display: flex;
-          gap: 2rem;
-          margin-top: 1rem;
-          align-items: center;
-          border-radius: 8px;
-          justify-content: center;
-          flex-direction: column;
-          padding: 1.5rem;
-          background-color: #F9F9F9;
-        }
-        .safeSecure > h3 {
-          font-size: 1.5em;
-          font-weight: 500;
-          color: #333;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-        }
-        .safeSecure > h3 > div > strong {
-          font-weight: 700;
-          border-radius: 15px;
-          padding: 0.5rem 1.2rem;
-          line-height: 0 !important;
-          background-color: #23ADB7;
-          color: #f4f4f4;
-        }
-        .bankName {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          justify-items: center;
-          gap: 1rem;
-          width: 100%;
-        }
-        .bankName > span {
-          padding: 0.2rem 1rem;
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        .alis-dijital-container {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 40px;
           background-color: #fff;
-          border-radius: 180px;
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          position: relative;
-          height: 50px;
+          color: #000;
+          font-family: 'Poppins', sans-serif;
+          line-height: 1.5;
+          text-align: center;
+          box-sizing: border-box;
+        }
+        .alis-dijital-title {
+          font-size: 36px;
+          font-weight: 700;
+          margin-bottom: 40px;
+          letter-spacing: 1px;
+          color: #000;
+          text-align: center;
+        }
+        /* Kartların kapsayıcısı: tüm cihazlarda alt alta yığılacak */
+        .alis-dijital-cards {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          margin-left: 0;
+        }
+        /* Her kart tam genişlikte */
+        .alis-dijital-card {
+          width: 100%;
+          background-color: #fff;
+          color: #000;
+          border: 1px solid #ccc;
+          border-radius: 4px;
           overflow: hidden;
           display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          flex-direction: column;
+          text-align: center;
         }
-        .bankName > span:hover {
-          transform: scale(1.1);
-          box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        /* Kart başlığı */
+        .alis-dijital-card-header {
+          background-color: #000;
+          color: #fff;
+          padding: 12px;
+          font-size: 18px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
-        .bankName img {
-          object-fit: contain;
-          width: 120px;
-          height: auto;
+        /* Kart içeriği */
+        .alis-dijital-card-content {
+          padding: 20px;
         }
-        @media screen and (max-width: 1126px) {
-          .safeSecure > h3 {
-            flex-direction: column;
-          }
+        /* Grid tabanlı tablo */
+        .alis-dijital-data-list {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          margin-top: 10px;
+          overflow: hidden;
+        }
+        .alis-dijital-data-row {
+          display: contents;
+        }
+        .alis-dijital-data-cell {
+          padding: 10px;
+          font-size: 14px;
+          text-align: center;
+          border-bottom: 1px solid #ccc;
+          border-right: 1px solid #ccc;
+          color: #000;
+        }
+        /* Son sütunda sağ kenarlık kaldır */
+        .alis-dijital-data-row .alis-dijital-data-cell:nth-child(2n) {
+          border-right: none;
+        }
+        /* Son satırda alt kenarlığı kaldır */
+        .alis-dijital-data-list .alis-dijital-data-row:last-child .alis-dijital-data-cell {
+          border-bottom: none;
+        }
+        /* Başlık satırı */
+        .alis-dijital-header-row {
+          background-color: #000;
+          color: #fff;
+          font-weight: 600;
+          text-transform: uppercase;
         }
       </style>
-
-      <div class="safeSecure">
-        <h3>Vade Farksız <div><strong>3 TAKSİT</strong> İmkanı!</div></h3>
-        <div class="bankName">
-          <span><img src="https://alisdijital.com/card/world.svg" alt="World"></span>
-          <span><img src="https://alisdijital.com/card/maximum.svg" alt="Maximum"></span>
-          <span><img src="https://alisdijital.com/card/paraf.svg" alt="Paraf"></span>
-          <span><img src="https://alisdijital.com/card/axess.svg" alt="Axess"></span>
-          <span><img src="https://alisdijital.com/card/cardFinans.svg" alt="CardFinans"></span>
-          <span><img src="https://alisdijital.com/card/bonusCard.svg" alt="Bonus"></span>
-          <span><img src="https://alisdijital.com/card/bankKart.svg" alt="BankKart"></span>
-          <span><img src="https://alisdijital.com/card/advantage.svg" alt="Advantage"></span>
-        </div>
-      </div>
-    `;
-
-    // safeSecure alanını, container'ın ÜSTÜNE ekleyerek mevcut container içeriğine dokunmuyoruz
-    container.insertAdjacentHTML("beforebegin", safeSecureHTML);
-
-    // --- 2.2) “Birlikte İyi Gider” (Pairs well with) ALANI ---
-    // Türkçe, slider bilgisi vs. eklenebilir; burada basit bir örnek
-    const pairsWellHTML = `
-      <div class="pairs-well-section" style="margin-top: 20px; padding: 20px; background-color: #F9F9F9; border-radius: 8px;">
-        <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Birlikte İyi Gider</h2>
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-          <!-- Örnek ürün kutusu -->
-          <div style="border: 1px solid #ddd; border-radius: 6px; padding: 10px; width: 200px; background-color: #fff;">
-            <p style="font-size: 0.9rem; color: #888; margin: 0 0 4px;">Krem</p>
-            <p style="font-weight: 600; margin: 0 0 4px;">Rose Quartz Yüz Peelingi</p>
-            <p style="color: #666; margin: 0;">79,00 TL'den başlayan fiyatlarla</p>
+      <div class="alis-dijital-container">
+        <h1 class="alis-dijital-title">Beden Tablosu</h1>
+        <div class="alis-dijital-cards">
+          <!-- 1. Kart: Model Bilgileri -->
+          <div class="alis-dijital-card">
+            <div class="alis-dijital-card-header">Model Bilgileri</div>
+            <div class="alis-dijital-card-content">
+              <div class="alis-dijital-data-list">
+                <div class="alis-dijital-data-row alis-dijital-header-row">
+                  <div class="alis-dijital-data-cell">Özellik</div>
+                  <div class="alis-dijital-data-cell">Değer</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">Model Boy (Height)</div>
+                  <div class="alis-dijital-data-cell">180 cm</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">Model Kilo (Weight)</div>
+                  <div class="alis-dijital-data-cell">84 kg</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">Model Beden (Size)</div>
+                  <div class="alis-dijital-data-cell">M</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">Model Beden (Size)</div>
+                  <div class="alis-dijital-data-cell">33</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <!-- İsterseniz başka ürünler de ekleyebilirsiniz -->
+          <!-- 2. Kart: Üst Giyim -->
+          <div class="alis-dijital-card">
+            <div class="alis-dijital-card-header">Üst Giyim</div>
+            <div class="alis-dijital-card-content">
+              <div class="alis-dijital-data-list">
+                <div class="alis-dijital-data-row alis-dijital-header-row">
+                  <div class="alis-dijital-data-cell">Kilo Aralığı</div>
+                  <div class="alis-dijital-data-cell">Beden</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">60 - 74</div>
+                  <div class="alis-dijital-data-cell">S</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">75 - 84</div>
+                  <div class="alis-dijital-data-cell">M</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">85 - 89</div>
+                  <div class="alis-dijital-data-cell">L</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">90 - 110</div>
+                  <div class="alis-dijital-data-cell">XL</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 3. Kart: Alt Giyim -->
+          <div class="alis-dijital-card">
+            <div class="alis-dijital-card-header">Alt Giyim</div>
+            <div class="alis-dijital-card-content">
+              <div class="alis-dijital-data-list">
+                <div class="alis-dijital-data-row alis-dijital-header-row">
+                  <div class="alis-dijital-data-cell">Kilo Aralığı</div>
+                  <div class="alis-dijital-data-cell">Beden</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">60 - 74</div>
+                  <div class="alis-dijital-data-cell">S</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">75 - 84</div>
+                  <div class="alis-dijital-data-cell">M</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">85 - 89</div>
+                  <div class="alis-dijital-data-cell">L</div>
+                </div>
+                <div class="alis-dijital-data-row">
+                  <div class="alis-dijital-data-cell">90 - 110</div>
+                  <div class="alis-dijital-data-cell">XL</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;
-
-    // “Birlikte İyi Gider” alanını .safeSecure'in ALTINA ekliyoruz:
-    const safeSecureElement = document.querySelector(".safeSecure");
-    if (safeSecureElement) {
-      safeSecureElement.insertAdjacentHTML("afterend", pairsWellHTML);
-    }
-
-    // **DİKKAT**: container.innerHTML = ... satırını tamamen kaldırdık,
-    // böylece mevcut tasarımınız (150 TL üzeri kargo vb.) bozulmadan kalır.
   };
 
-  /*******************************************************
-   * 3) FOOTER'E ALIS DİJİTAL (VEYA FARKLI) LOGO EKLEME
-   *******************************************************/
-  const addFooterHtml = () => {
-    if (document.querySelector(".footer-content-added")) {
+  // Sayfaya Alış Dijital içerik ekle (varsa yinelenmeyi önlemek için kontrol edilir)
+  const addAlisDijitalContent = () => {
+    const container = document.querySelector(".product-detail-page-easy-refund");
+    if (!container || document.querySelector(".alis-dijital-container")) {
       return;
     }
-    const footer = document.querySelector("footer");
-    if (footer) {
-      footer.insertAdjacentHTML(
-        "beforeend",
-        `
-          <style>
-            .footer-content-added {
-              padding: 1rem;
-              background: #fff;
-              text-align: center;
-            }
-          </style>
-          <div class="footer-content-added">
-            <a href="https://www.alisdijital.com/?ref=https://no239.com" target="_blank" rel="noreferrer">
-              <img style="width: 150px; height:auto;" src="https://alisdijital.com/image/logo.png" alt="Alis Dijital">
-            </a>
-          </div>
-        `
-      );
+    // Yeni içeriği ilgili container'ın üstüne ekleyelim
+    container.insertAdjacentHTML("beforebegin", createAlisDijitalContent());
+  };
+
+  // URL değişikliklerinde içeriği güncelle
+  const onUrlChange = () => {
+    setTimeout(() => {
+      if (window.location.href !== previousUrl) {
+        previousUrl = window.location.href;
+        document.querySelectorAll(".alis-dijital-container").forEach((el) => el.remove());
+        waitForElement(".product-detail-page-easy-refund", addAlisDijitalContent, 100, 10);
+      }
+    }, 300);
+  };
+
+  // MutationObserver ile DOM değişikliklerini takip et
+  const initializeObserver = () => {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.addedNodes.length || mutation.removedNodes.length) {
+          onUrlChange();
+          break;
+        }
+      }
+    });
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
     }
   };
 
-  /*******************************************************
-   * 4) TARAYICI OLAYLARI: URL DEĞİŞİKLİKLERİ vs.
-   *******************************************************/
+  // Başlangıç fonksiyonu: elementi bekleyip içeriği ekle, URL değişikliklerini dinle
+  const initializeRender = () => {
+    waitForElement(".product-detail-page-easy-refund", addAlisDijitalContent, 100, 10);
+    onUrlChange();
+    initializeObserver();
+  };
+
+  // Event listener'ları ekle
+  window.addEventListener("load", initializeRender);
   window.addEventListener("popstate", onUrlChange);
+  window.addEventListener("DOMContentLoaded", initializeRender);
 
-  const pushState = history.pushState;
+  // History metodlarını geçersiz kılarak URL değişikliklerini yakala
+  const originalPushState = history.pushState;
   history.pushState = function () {
-    pushState.apply(history, arguments);
+    originalPushState.apply(history, arguments);
     onUrlChange();
   };
 
-  const replaceState = history.replaceState;
+  const originalReplaceState = history.replaceState;
   history.replaceState = function () {
-    replaceState.apply(history, arguments);
+    originalReplaceState.apply(history, arguments);
     onUrlChange();
   };
-
-  // DOM değişikliklerini de izleyelim:
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.addedNodes.length || mutation.removedNodes.length) {
-        onUrlChange();
-      }
-    });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  // Sayfa ilk yüklendiğinde
-  onUrlChange();
 })();
-</script>
