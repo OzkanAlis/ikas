@@ -1,24 +1,31 @@
-(() => {
-  // waitForElement: Belirtilen seçiciyi her 'interval' ms kontrol eder, 'maxAttempts' den sonra zaman aşımına uğrarsa durur.
+(function () {
   function waitForElement(selector, callback, interval = 100, maxAttempts = 50) {
     let attempts = 0;
     const intervalId = setInterval(() => {
       const element = document.querySelector(selector);
       if (element) {
         clearInterval(intervalId);
-        console.log(`Element '${selector}' bulundu (${attempts * interval}ms sonra).`);
         callback(element);
-      } else if (attempts >= maxAttempts) {
+      } else if (++attempts >= maxAttempts) {
         clearInterval(intervalId);
-        console.warn(`Element '${selector}' ${interval * maxAttempts}ms içinde bulunamadı.`);
+        console.warn(`[bedenTablosu] '${selector}' bulunamadı.`);
       }
-      attempts++;
     }, interval);
   }
 
-  // addBedenTablosu: Hedef elementin içeriğini tamamen temizleyip, beden tablosu HTML içeriğini ekler.
   function addBedenTablosu(targetDiv) {
-    targetDiv.innerHTML = `
+    if (!targetDiv) return;
+
+    let container = targetDiv.querySelector('.alis-dijital-script');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'alis-dijital-script';
+      targetDiv.appendChild(container);
+    }
+
+    if (container.innerHTML.trim()) return; // Daha önce eklendiyse tekrar ekleme
+
+    container.innerHTML = `
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
         .alis-dijital-container {
@@ -104,7 +111,6 @@
       <div class="alis-dijital-container">
         <h1 class="alis-dijital-title">Beden Tablosu</h1>
         <div class="alis-dijital-cards">
-          <!-- 1. Kart: Model Bilgileri -->
           <div class="alis-dijital-card">
             <div class="alis-dijital-card-header">Model Bilgileri</div>
             <div class="alis-dijital-card-content">
@@ -132,7 +138,6 @@
               </div>
             </div>
           </div>
-          <!-- 2. Kart: Üst Giyim -->
           <div class="alis-dijital-card">
             <div class="alis-dijital-card-header">Üst Giyim</div>
             <div class="alis-dijital-card-content">
@@ -160,7 +165,6 @@
               </div>
             </div>
           </div>
-          <!-- 3. Kart: Alt Giyim -->
           <div class="alis-dijital-card">
             <div class="alis-dijital-card-header">Alt Giyim</div>
             <div class="alis-dijital-card-content">
@@ -191,58 +195,42 @@
         </div>
       </div>
     `;
-    console.log("Beden tablosu içeriği başarıyla güncellendi.");
+    console.log("[bedenTablosu] İçerik başarıyla eklendi.");
   }
 
-  // URL veya DOM değişikliklerini algılamak için (SPA ortamında yeniden ekleme)
-  let previousUrl = window.location.href;
-  function onUrlChange() {
-    setTimeout(() => {
-      if (window.location.href !== previousUrl) {
-        previousUrl = window.location.href;
-        const container = document.querySelector(".product-detail-page-easy-refund");
-        if (container) {
-          addBedenTablosu(container);
-        }
+  function observeUrlChanges() {
+    let lastUrl = location.href;
+    new MutationObserver(() => {
+      if (location.href !== lastUrl) {
+        lastUrl = location.href;
+        runBedenTablosu();
       }
-    }, 300);
+    }).observe(document.body, { childList: true, subtree: true });
+
+    const originalPushState = history.pushState;
+    history.pushState = function () {
+      originalPushState.apply(this, arguments);
+      runBedenTablosu();
+    };
+    const originalReplaceState = history.replaceState;
+    history.replaceState = function () {
+      originalReplaceState.apply(this, arguments);
+      runBedenTablosu();
+    };
+    window.addEventListener('popstate', runBedenTablosu);
   }
 
-  // DOM değişikliklerini izlemek için MutationObserver kur
-  function initializeObserver() {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.addedNodes.length || mutation.removedNodes.length) {
-          onUrlChange();
-        }
-      });
+  function runBedenTablosu() {
+    waitForElement('.product-detail-page-easy-refund', addBedenTablosu);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      runBedenTablosu();
+      observeUrlChanges();
     });
-    if (document.body) {
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
+  } else {
+    runBedenTablosu();
+    observeUrlChanges();
   }
-
-  // initializeRender: Sayfa yüklendiğinde hedef elementi bekle, beden tablosunu ekle ve observer'ı başlat.
-  function initializeRender() {
-    waitForElement(".product-detail-page-easy-refund", addBedenTablosu, 100, 50);
-    onUrlChange();
-    initializeObserver();
-  }
-
-  window.addEventListener("load", initializeRender);
-  window.addEventListener("popstate", onUrlChange);
-  window.addEventListener("DOMContentLoaded", initializeRender);
-
-  // URL değişimlerini yakalamak için history.pushState ve history.replaceState override'leri
-  const pushState = history.pushState;
-  history.pushState = function () {
-    pushState.apply(history, arguments);
-    onUrlChange();
-  };
-
-  const replaceState = history.replaceState;
-  history.replaceState = function () {
-    replaceState.apply(history, arguments);
-    onUrlChange();
-  };
 })();
