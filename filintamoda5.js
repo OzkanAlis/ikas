@@ -16,14 +16,11 @@
   function addBedenTablosu(targetDiv) {
     if (!targetDiv) return;
 
-    let container = targetDiv.querySelector('.alis-dijital-script');
-    if (!container) {
-      container = document.createElement('div');
-      container.className = 'alis-dijital-script';
-      targetDiv.appendChild(container);
-    }
+    // Zaten eklenmişse tekrar yapma
+    if (document.querySelector('.alis-dijital-script')) return;
 
-    if (container.innerHTML.trim()) return; // Daha önce eklendiyse tekrar ekleme
+    const container = document.createElement('div');
+    container.className = 'alis-dijital-script';
 
     container.innerHTML = `
       <style>
@@ -195,7 +192,14 @@
         </div>
       </div>
     `;
-    console.log("[bedenTablosu] İçerik başarıyla eklendi.");
+
+    // 📍 ALTINA EKLE
+    targetDiv.insertAdjacentElement("afterend", container);
+
+    // 🔕 Eskisini gizle
+    targetDiv.style.display = "none";
+
+    console.log("[bedenTablosu] Tablo eklendi, eski içerik gizlendi.");
   }
 
   function observeUrlChanges() {
