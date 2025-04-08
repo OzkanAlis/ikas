@@ -1,3 +1,4 @@
+// a
 (function () {
   function waitForElement(selector, callback, interval = 100, maxAttempts = 50) {
     let attempts = 0;
