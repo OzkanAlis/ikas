@@ -1,4 +1,3 @@
-// a
 (function () {
   function waitForElement(selector, callback, interval = 100, maxAttempts = 50) {
     let attempts = 0;
@@ -21,10 +20,28 @@
       return;
     }
 
-    // Ürün ismine göre key'leme yapılmasına gerek kalmadan her sayfa yüklemesinde yeni rastgele değerler üretiliyor.
-    const rating = Math.round((Math.random() * 0.4 + 4.5) * 10) / 10; // 4.5 - 4.9 arası
-    const reviewCount = Math.floor(Math.random() * (150 - 70 + 1)) + 70;  // 70-150 arası
-    const favoriteCount = Math.floor(Math.random() * (300 - 200 + 1)) + 200; // 200-300 arası
+    const productId = productNameElement.textContent.trim();
+    const ratingKey = 'product-rating-' + encodeURIComponent(productId);
+    const reviewKey = 'product-review-' + encodeURIComponent(productId);
+    const favoriteKey = 'product-favorite-' + encodeURIComponent(productId);
+
+    let rating = sessionStorage.getItem(ratingKey);
+    if (rating === null) {
+      rating = Math.round((Math.random() * 0.4 + 4.5) * 10) / 10; // Örn: 4.5 - 4.9 arası
+      sessionStorage.setItem(ratingKey, rating);
+    }
+
+    let reviewCount = sessionStorage.getItem(reviewKey);
+    if (reviewCount === null) {
+      reviewCount = Math.floor(Math.random() * (150 - 70 + 1)) + 70; // 70-150 arası
+      sessionStorage.setItem(reviewKey, reviewCount);
+    }
+
+    let favoriteCount = sessionStorage.getItem(favoriteKey);
+    if (favoriteCount === null) {
+      favoriteCount = Math.floor(Math.random() * (300 - 200 + 1)) + 200; // 200-300 arası
+      sessionStorage.setItem(favoriteKey, favoriteCount);
+    }
 
     // Eğer rating 4.75 ve üzerindeyse 5 yıldız, değilse 4 yıldız + yarım
     const starString = rating >= 4.75 ? '★★★★★' : '★★★★☆';
@@ -80,7 +97,7 @@
       </div>
       <div class="favorite-line">
         <span class="heart">❤️</span>
-        <span class="favorite-text"><strong>${favoriteCount}</strong> Kişinin Favorilerinde!</span>
+        <span class="favorite-text"><strong>${favoriteCount} </strong> Kişinin Favorilerinde!</span>
       </div>
     `;
     productNameElement.insertAdjacentElement('afterend', ratingContainer);
